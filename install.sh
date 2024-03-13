@@ -78,6 +78,11 @@ pip install jpeg4py
 
 echo ""
 echo ""
+echo "****************** Installing timm ******************"
+pip install timm 
+
+echo ""
+echo ""
 echo "****************** Installing ninja-build to compile PreROIPooling ******************"
 echo "************************* Need sudo privilege ******************"
 sudo apt-get install ninja-build
