@@ -36,7 +36,7 @@ def main():
 
     args = parser.parse_args()
 
-    run_video(args.tracker_name, args.tracker_param, args.input_videofile, args.output, args.bbox, args.debug, args.save_results, args.ui)
+    run_video(args.tracker_name, args.tracker_param, args.input_videofile, args.output, args.bbox, args.debug, args.save_results)
 
 
 if __name__ == '__main__':
