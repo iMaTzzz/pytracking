@@ -288,7 +288,7 @@ class Tracker:
             raise ValueError('Unknown multi object mode {}'.format(multiobj_mode))
 
         class UIControl:
-            def __init__(self, curr_object_id, init_bbox, init_object_ids, object_ids, original_image, current_image):
+            def __init__(self, curr_object_id, init_bbox, init_object_ids, object_ids):
                 self.mode = "init" # Two modes: init or select
                 self.target_tl = (-1, -1)
                 self.target_br = (-1, -1)
@@ -296,8 +296,6 @@ class Tracker:
                 self.init_bbox = init_bbox
                 self.init_object_ids = init_object_ids
                 self.object_ids = object_ids
-                self.original_image = original_image
-                self.current_image = current_image
 
             def mouse_callback(self, event, x, y, flags, param):
                 global frame_copy
