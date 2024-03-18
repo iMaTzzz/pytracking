@@ -387,7 +387,8 @@ class Tracker:
             frame_copy = cv.imshow(display_name, frame_copy)
             # Put text
             font_color = (255, 255, 255)
-            msg = "Select target(s). Press 'd' when you are done."
+            msg = "Select target(s). Press 'd' when you are done or 'q' if you want to quit"
+            #msg = "Select target(s). Press 'd' when you are done."
             cv.rectangle(frame_copy, (5, 5), (630, 40), (50, 50, 50), -1)
             cv.putText(frame_copy, msg, (10, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1, font_color, 2)
             ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids, original_image=frame, current_image=frame_copy)
@@ -398,6 +399,8 @@ class Tracker:
                 init_object_ids, object_ids, init_bbox = ui_control.init_object_ids, ui_control.init_object_ids, ui_control.init_bbox
                 if key == ord("d") and len(init_object_ids) != 0:
                     break
+                elif key == ord("q"):
+                    raise RuntimeError("User quit the program by pressing 'q' key")
             print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
         # Close all windows
         cv.destroyAllWindows()
