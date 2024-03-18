@@ -332,7 +332,7 @@ class Tracker:
             for index, roi in enumerate(rois, start=1):
                 init_object_ids.append(index)
                 object_ids.append(index)
-                init_bbox[index] = roi
+                init_bbox[index] = roi.tolist()
 
             print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
         # Close all windows
