@@ -392,12 +392,13 @@ class Tracker:
                 init_object_ids, object_ids, init_bbox = ui_control.init_object_ids, ui_control.init_object_ids, ui_control.init_bbox
                 if key == ord("d") and len(init_object_ids) != 0:
                     break
-            print(f"{init_object_ids=}, {init_bbox=}")
+            print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
 
 
         out = tracker.initialize(frame, {
             'init_bbox': init_bbox,
-            'init_object_ids': init_object_ids
+            'init_object_ids': init_object_ids,
+            'object_ids': object_ids
         })
 
         prev_output = OrderedDict(out) 
