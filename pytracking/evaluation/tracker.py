@@ -306,7 +306,7 @@ class Tracker:
                     cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                 elif event == cv.EVENT_LBUTTONUP and self.mode == 'select':
                     self.target_br = (x, y)
-                    cv.rectangle(frame_disp, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
+                    cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                     self.mode = 'init'
                     self.init_object_ids.append(curr_object_id)
                     self.init_bbox[self.curr_object_id] = self.get_bb()
@@ -434,7 +434,7 @@ class Tracker:
                     if save_results:
                         output_boxes[obj_id].append(state)
 
-            if output_videofilepath is not None:
+            if output_video is not None:
                 output.write(frame_disp)
 
         # When everything done, release the capture
@@ -444,7 +444,7 @@ class Tracker:
         if save_results:
             if not os.path.exists(self.results_dir):
                 os.makedirs(self.results_dir)
-            video_name = "webcam" if videofilepath is None else Path(videofilepath).stem
+            video_name = Path(input_video).stem
             base_results_path = os.path.join(self.results_dir, 'video_{}'.format(video_name))
             print(f"Save results to: {base_results_path}")
             for obj_id, bbox in output_boxes.items():
