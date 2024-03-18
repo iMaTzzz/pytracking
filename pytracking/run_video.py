@@ -21,7 +21,7 @@ def run_video(tracker_name, tracker_param, input_videofile, output_videofile=Non
         save_results: Bool if we want to save the predictions
     """
     tracker = Tracker(tracker_name, tracker_param)
-    tracker.run_video_generic(input_videofilepath=input_videofile, ouput_videofilepath=output_videofile, bbox_path=bbox_path, debug=debug, save_results=save_results, ui=ui)
+    tracker.run_video_generic(input_videofilepath=input_videofile, ouput_videofilepath=output_videofile, bbox_path=bbox_path, debug=debug, save_results=save_results)
 
 def main():
     parser = argparse.ArgumentParser(description='Run the tracker on a video.')
