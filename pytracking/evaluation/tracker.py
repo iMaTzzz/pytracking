@@ -393,7 +393,7 @@ class Tracker:
             while True:
                 # Draw rectangles based on UIControl state
                 for box in ui_control.init_bbox.values():
-                    cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
+                    cv.rectangle(frame_copy, (box[0], box[1]), ((box[0] + box[2]), (box[1] + box[3])), (255, 0, 0), 2)
                 # create bounding boxes until "d" key is pressed when you are done
                 key = cv.waitKey(1000) & 0xFF
                 init_object_ids, object_ids, init_bbox = ui_control.init_object_ids, ui_control.init_object_ids, ui_control.init_bbox
