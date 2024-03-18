@@ -257,7 +257,7 @@ class Tracker:
 
         return output
 
-    def run_video_generic(self, video_input, debug=None, visdom_info=None, output_video=None, bbox_path=None, save_results=False):
+    def run_video_generic(self, input_video, debug=None, visdom_info=None, output_video=None, bbox_path=None, save_results=False):
         """Run the tracker with the webcam or a provided video file.
         args:
             debug: Debug level.
@@ -348,9 +348,9 @@ class Tracker:
         cv.resizeWindow(display_name, 960, 720)
 
         # open input video file
-        assert os.path.isfile(video_input), "Invalid param {}".format(video_input)
+        assert os.path.isfile(input_video), "Invalid param {}".format(input_video)
         ", videofilepath must be a valid videofile"
-        cap = cv.VideoCapture(video_input)
+        cap = cv.VideoCapture(input_video)
         # Get video properties
         fps = cap.get(cv.CAP_PROP_FPS)
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
