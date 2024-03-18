@@ -384,7 +384,7 @@ class Tracker:
                     curr_object_id += 1
         else: # Second method: define them using the UI
             frame_copy = frame.copy()
-            cv.imshow(display_name, frame_copy)
+            frame_copy = cv.imshow(display_name, frame_copy)
             # Put text
             font_color = (255, 255, 255)
             msg = "Select target(s). Press 'd' when you are done."
