@@ -257,7 +257,7 @@ class Tracker:
 
         return output
 
-    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, bbox_path=None, save_results=False, save_video=True, ui=False):
+    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, bbox_path=None, save_results=False):
         """Run the tracker with the webcam or a provided video file.
         args:
             debug: Debug level.
