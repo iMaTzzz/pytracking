@@ -327,7 +327,7 @@ class Tracker:
             frame_copy = frame.copy()
             cv.imshow(display_name, frame_copy)
             rois = cv.selectROIs(display_name, frame_copy)
-            if not rois:
+            if not rois.any():
                 sys.exit("Pressed 'q', exiting program")
             for index, roi in enumerate(rois, start=1):
                 init_object_ids.append(index)
