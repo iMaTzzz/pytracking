@@ -238,7 +238,7 @@ class TaMOs(BaseTracker):
                     d[key] = states
             out = d
 
-        out = {'time': time.time() - tic}
+        out['time'] = time.time() - tic
         return out
 
     def visualize_raw_results(self, score_map, new_state, object_presence_scores):
