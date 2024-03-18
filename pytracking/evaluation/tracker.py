@@ -358,6 +358,7 @@ class Tracker:
         fps = cap.get(cv.CAP_PROP_FPS)
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        total_frames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         # Start writing video output
         if output_video is not None:
             fourcc = cv.VideoWriter_fourcc(*'mp4v')  # Codec for the output video
@@ -423,6 +424,7 @@ class Tracker:
             info['previous_output'] = prev_output
 
             out = tracker.track(frame, info)
+            print(f"Inference time for frame {frame_number}/{total_frames}: {out[time]:.4f} seconds")
             prev_output = OrderedDict(out)
 
 
