@@ -392,7 +392,7 @@ class Tracker:
             cv.setMouseCallback(display_name, ui_control.mouse_callback)
             while True:
                 # Draw rectangles based on UIControl state
-                for box in ui_control.init_bbox:
+                for box in ui_control.init_bbox.values():
                     cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
                 # create bounding boxes until "d" key is pressed when you are done
                 key = cv.waitKey(1000) & 0xFF
