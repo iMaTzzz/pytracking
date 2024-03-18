@@ -20,6 +20,7 @@ def run_video(tracker_name, tracker_param, input_video, output_video=None, bbox_
         debug: Debug level.
         save_results: Bool if we want to save the predictions
     """
+    print(f"{tracker_name=}, {tracker_param=}, {input_video=}, {output_video=}, {bbox_path=}, {debug=}, {save_results=}")
     tracker = Tracker(tracker_name, tracker_param)
     tracker.run_video_generic(input_video=input_video, ouput_video=output_video, bbox_path=bbox_path, debug=debug, save_results=save_results)
 
