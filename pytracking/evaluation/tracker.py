@@ -300,15 +300,16 @@ class Tracker:
                 self.current_image = current_image
 
             def mouse_callback(self, event, x, y, flags, param):
+                global frame_copy
                 if event == cv.EVENT_LBUTTONDOWN and self.mode == 'init':
                     self.target_tl = (x, y)
                     self.mode = 'select'
                 elif event == cv.EVENT_MOUSEMOVE and self.mode == 'select':
                     self.target_br = (x, y)
-                    cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
+                    cv.rectangle(frame_copy, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                 elif event == cv.EVENT_LBUTTONUP and self.mode == 'select':
                     self.target_br = (x, y)
-                    cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
+                    cv.rectangle(frame_copy, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                     self.mode = 'init'
                     self.init_object_ids.append(self.curr_object_id)
                     self.object_ids.append(self.curr_object_id)
@@ -316,17 +317,18 @@ class Tracker:
                     self.curr_object_id += 1
                     self.target_tl = (-1, -1)
                     self.target_br = (-1, -1)
-                elif event == cv.EVENT_MBUTTONUP:
-                    # Erase last object to track
-                    if self.curr_object_id > 0:
-                        self.init_bbox.popitem(last=True)
-                        self.init_object_ids.pop()
-                        self.object_ids.pop()
-                        self.curr_object_id -= 1
-                        self.target_tl = (-1, -1)
-                        self.target_br = (-1, -1)
-                        self.mode = 'init'
-                        self.draw_bb()
+                #elif event == cv.EVENT_MBUTTONUP:
+                    ## Erase last object to track
+                    #if self.curr_object_id > 0:
+                        #self.init_bbox.popitem(last=True)
+                        #self.init_object_ids.pop()
+                        #self.object_ids.pop()
+                        #self.curr_object_id -= 1
+                        #self.target_tl = (-1, -1)
+                        #self.target_br = (-1, -1)
+                        #self.mode = 'init'
+                        #self.draw_bb()
+
             def get_tl(self):
                 tl = self.target_tl
                 br = self.target_br
@@ -343,9 +345,9 @@ class Tracker:
                 return [min(tl[0], br[0]), min(tl[1], br[1]), abs(br[0] - tl[0]), abs(br[1] - tl[1])]
             
             def draw_bb(self):
-                self.current_image = self.original_image.copy()
+                #self.current_image = self.original_image.copy()
                 for box in init_bbox:
-                    cv.rectangle(self.current_image, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
+                    cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
 
         display_name = 'Display: ' + self.name
         cv.namedWindow(display_name, cv.WINDOW_NORMAL | cv.WINDOW_KEEPRATIO)
@@ -385,14 +387,12 @@ class Tracker:
                     curr_object_id += 1
         else: # Second method: define them using the UI
             frame_copy = frame.copy()
-            frame_copy = cv.imshow(display_name, frame_copy)
+            cv.imshow(display_name, frame_copy)
             # Put text
             font_color = (255, 255, 255)
             msg = "Select target(s). Press 'd' when you are done or 'q' if you want to quit"
             #msg = "Select target(s). Press 'd' when you are done."
-            cv.rectangle(frame_copy, (5, 5), (630, 40), (50, 50, 50), -1)
-            cv.putText(frame_copy, msg, (10, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1, font_color, 2)
-            ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids, original_image=frame, current_image=frame_copy)
+            ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids)
             cv.setMouseCallback(display_name, ui_control.mouse_callback)
             while True:
                 # create bounding boxes until "d" key is pressed when you are done
