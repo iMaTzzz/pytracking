@@ -153,6 +153,8 @@ class TaMOs(BaseTracker):
         return reg_targets_per_im_all
 
     def track(self, image, info: dict = None) -> dict:
+        # Time initialization
+        tic = time.time()
         self.debug_info = {}
 
         self.frame_num += 1
@@ -236,6 +238,7 @@ class TaMOs(BaseTracker):
                     d[key] = states
             out = d
 
+        out = {'time': time.time() - tic}
         return out
 
     def visualize_raw_results(self, score_map, new_state, object_presence_scores):
