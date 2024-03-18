@@ -393,6 +393,8 @@ class Tracker:
                 if key == ord("d") and len(init_object_ids) != 0:
                     break
             print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
+        # Close all windows
+        cv.destroyAllWindows()
 
 
         out = tracker.initialize(frame, {
