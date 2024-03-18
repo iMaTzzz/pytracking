@@ -309,13 +309,12 @@ class Tracker:
                     self.target_br = (x, y)
                     cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                     self.mode = 'init'
-                    self.init_object_ids.append(curr_object_id)
-                    self.object_ids.append(curr_object_id)
+                    self.init_object_ids.append(self.curr_object_id)
+                    self.object_ids.append(self.curr_object_id)
                     self.init_bbox[self.curr_object_id] = self.get_bb()
                     self.curr_object_id += 1
                     self.target_tl = (-1, -1)
                     self.target_br = (-1, -1)
-                    print(f"{self.curr_object_id=}, {self.object_ids}")
                 elif event == cv.EVENT_MBUTTONUP:
                     # Erase last object to track
                     if self.curr_object_id > 0:
