@@ -355,6 +355,7 @@ class Tracker:
 
         # Start tracking loop
         frame_number = 1
+        total_time = 0
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -368,6 +369,7 @@ class Tracker:
             info['previous_output'] = prev_output
 
             out = tracker.track(frame, info)
+            total_time += out['time']
             print(f"Inference time for frame {frame_number}/{total_frames}: {out['time']:.4f} seconds")
             prev_output = OrderedDict(out)
 
@@ -392,6 +394,8 @@ class Tracker:
 
             if output_video is not None:
                 output.write(frame_disp)
+        print(f"Total time taken: {total_time:.2f} seconds")
+        print(f"Overall FPS: {total_frames / total_time:.2f}")
 
         # When everything done, release the capture
         cap.release()

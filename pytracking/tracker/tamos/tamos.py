@@ -230,6 +230,7 @@ class TaMOs(BaseTracker):
 
         out['target_bbox'] = OrderedDict({self.id_map[id]: val for id, val in out['target_bbox'].items()})
         out['object_presence_score'] = OrderedDict({self.id_map[id]: val for id, val in out['object_presence_score'].items()})
+        print(out)
 
         if not self.mot_dataset:
             d = {}
