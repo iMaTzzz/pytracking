@@ -288,7 +288,8 @@ class Tracker:
             raise ValueError('Unknown multi object mode {}'.format(multiobj_mode))
 
         display_name = 'Display: ' + self.name
-        cv.namedWindow(display_name, cv.WINDOW_FULLSCREEN)
+        cv.namedWindow(display_name, cv.WINDOW_NORMAL | cv.WINDOW_KEEPRATIO)
+        cv.resizeWindow(display_name, 1920, 1080)
 
         # open input video file
         assert os.path.isfile(input_video), "Invalid param {}".format(input_video)
