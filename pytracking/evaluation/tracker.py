@@ -14,6 +14,7 @@ from ltr.data.bounding_box_utils import masks_to_bboxes
 from pytracking.evaluation.multi_object_wrapper import MultiObjectWrapper
 from pathlib import Path
 import torch
+import sys
 
 
 _tracker_disp_colors = {1: (0, 255, 0), 2: (0, 0, 255), 3: (255, 0, 0),
@@ -400,7 +401,7 @@ class Tracker:
                 if key == ord("d") and len(init_object_ids) != 0:
                     break
                 elif key == ord("q"):
-                    raise RuntimeError("User quit the program by pressing 'q' key")
+                    sys.exit("Pressed 'q', exiting program")
             print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
         # Close all windows
         cv.destroyAllWindows()
