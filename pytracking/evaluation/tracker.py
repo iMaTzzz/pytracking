@@ -302,17 +302,15 @@ class Tracker:
                 if event == cv.EVENT_LBUTTONDOWN and self.mode == 'init':
                     self.target_tl = (x, y)
                     self.mode = 'select'
-                elif event == cv.EVENT_MOUSEMOVE and self.mode == 'select':
-                    self.target_br = (x, y)
-                    cv.rectangle(frame_copy, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
+                #elif event == cv.EVENT_MOUSEMOVE and self.mode == 'select':
+                    #self.target_br = (x, y)
                 elif event == cv.EVENT_LBUTTONUP and self.mode == 'select':
                     self.target_br = (x, y)
-                    cv.rectangle(frame_copy, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
-                    self.mode = 'init'
                     self.init_object_ids.append(self.curr_object_id)
                     self.object_ids.append(self.curr_object_id)
                     self.init_bbox[self.curr_object_id] = self.get_bb()
                     self.curr_object_id += 1
+                    self.mode = 'init'
                     self.target_tl = (-1, -1)
                     self.target_br = (-1, -1)
                 #elif event == cv.EVENT_MBUTTONUP:
@@ -342,10 +340,10 @@ class Tracker:
                 br = self.target_br
                 return [min(tl[0], br[0]), min(tl[1], br[1]), abs(br[0] - tl[0]), abs(br[1] - tl[1])]
             
-            def draw_bb(self):
-                #self.current_image = self.original_image.copy()
-                for box in init_bbox:
-                    cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
+            #def draw_bb(self):
+                ##self.current_image = self.original_image.copy()
+                #for box in init_bbox:
+                    #cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
 
         display_name = 'Display: ' + self.name
         cv.namedWindow(display_name, cv.WINDOW_NORMAL | cv.WINDOW_KEEPRATIO)
@@ -393,8 +391,11 @@ class Tracker:
             ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids)
             cv.setMouseCallback(display_name, ui_control.mouse_callback)
             while True:
+                # Draw rectangles based on UIControl state
+                for box in ui_control.init_bbox:
+                    cv.rectangle(frame_copy, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
                 # create bounding boxes until "d" key is pressed when you are done
-                key = cv.waitKey(0) & 0xFF
+                key = cv.waitKey(1000) & 0xFF
                 init_object_ids, object_ids, init_bbox = ui_control.init_object_ids, ui_control.init_object_ids, ui_control.init_bbox
                 if key == ord("d") and len(init_object_ids) != 0:
                     break
