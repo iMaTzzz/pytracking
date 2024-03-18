@@ -257,7 +257,7 @@ class Tracker:
 
         return output
 
-    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, optional_box=None, save_results=False, save_video=True, ui=False):
+    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, bbox_path=None, save_results=False, save_video=True, ui=False):
         """Run the tracker with the webcam or a provided video file.
         args:
             debug: Debug level.
@@ -368,8 +368,8 @@ class Tracker:
         init_bbox = OrderedDict()
         init_object_ids = []
 
-        if optional_box is not None:
-            with open(optional_box, "r") as f:
+        if bbox_path is not None:
+            with open(bbox_path, "r") as f:
                 for line in f:
                     x0, y0, width, height = map(int, line.strip().split(","))
                     init_bbox[curr_object_id] = [x0, y0, width, height]
