@@ -424,7 +424,7 @@ class Tracker:
             info['previous_output'] = prev_output
 
             out = tracker.track(frame, info)
-            print(f"Inference time for frame {frame_number}/{total_frames}: {out[time]:.4f} seconds")
+            print(f"Inference time for frame {frame_number}/{total_frames}: {out['time']:.4f} seconds")
             prev_output = OrderedDict(out)
 
 
