@@ -257,7 +257,7 @@ class Tracker:
 
         return output
 
-    def run_video_generic(self, debug=None, visdom_info=None, videofilepath=None, optional_box=None, save_results=False):
+    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, optional_box=None, save_results=False, save_video=True, ui=False):
         """Run the tracker with the webcam or a provided video file.
         args:
             debug: Debug level.
@@ -287,163 +287,155 @@ class Tracker:
             raise ValueError('Unknown multi object mode {}'.format(multiobj_mode))
 
         class UIControl:
-            def __init__(self):
-                self.mode = 'init'  # init, select, track
+            def __init__(self, curr_object_id, init_bbox, init_object_ids, original_image, current_image):
+                self.mode = "init" # Two modes: init or select
                 self.target_tl = (-1, -1)
                 self.target_br = (-1, -1)
-                self.new_init = False
+                self.curr_object_id = curr_object_id
+                self.init_bbox = init_bbox
+                self.init_object_ids = init_object_ids
+                self.original_image = original_image
+                self.current_image = current_image
 
             def mouse_callback(self, event, x, y, flags, param):
                 if event == cv.EVENT_LBUTTONDOWN and self.mode == 'init':
                     self.target_tl = (x, y)
-                    self.target_br = (x, y)
                     self.mode = 'select'
                 elif event == cv.EVENT_MOUSEMOVE and self.mode == 'select':
                     self.target_br = (x, y)
-                elif event == cv.EVENT_LBUTTONDOWN and self.mode == 'select':
+                    cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
+                elif event == cv.EVENT_LBUTTONUP and self.mode == 'select':
                     self.target_br = (x, y)
+                    cv.rectangle(frame_disp, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                     self.mode = 'init'
-                    self.new_init = True
-
+                    self.init_object_ids.append(curr_object_id)
+                    self.init_bbox[self.curr_object_id] = self.get_bb()
+                    self.curr_object_id+=1
+                    self.target_tl = (-1, -1)
+                    self.target_br = (-1, -1)
+                elif event == cv.EVENT_MBUTTONUP:
+                    # Erase last object to track
+                    if self.curr_object_id > 0:
+                        self.init_bbox.popitem(last=True)
+                        self.init_object_ids.pop()
+                        self.curr_object_id -= 1
+                        self.target_tl = (-1, -1)
+                        self.target_br = (-1, -1)
+                        self.mode = 'init'
+                        self.draw_bb()
             def get_tl(self):
-                return self.target_tl if self.target_tl[0] < self.target_br[0] else self.target_br
+                tl = self.target_tl
+                br = self.target_br
+                return (min(tl[0], br[0]), min(tl[1], br[1]))
 
             def get_br(self):
-                return self.target_br if self.target_tl[0] < self.target_br[0] else self.target_tl
+                tl = self.target_tl
+                br = self.target_br
+                return (max(tl[0], br[0]), max(tl[1], br[1]))
 
             def get_bb(self):
-                tl = self.get_tl()
-                br = self.get_br()
-
-                bb = [min(tl[0], br[0]), min(tl[1], br[1]), abs(br[0] - tl[0]), abs(br[1] - tl[1])]
-                return bb
-
-        ui_control = UIControl()
+                tl = self.target_tl
+                br = self.target_br
+                return [min(tl[0], br[0]), min(tl[1], br[1]), abs(br[0] - tl[0]), abs(br[1] - tl[1])]
+            
+            def draw_bb(self):
+                self.current_image = self.original_image.copy()
+                for box in init_bbox:
+                    cv.rectangle(self.current_image, (box[0], box[1]), ((box[1] + box[3]), (box[2] + box[4])), (255, 0, 0), 2)
 
         display_name = 'Display: ' + self.name
         cv.namedWindow(display_name, cv.WINDOW_NORMAL | cv.WINDOW_KEEPRATIO)
         cv.resizeWindow(display_name, 960, 720)
-        cv.setMouseCallback(display_name, ui_control.mouse_callback)
 
-        frame_number = 0
+        # open input video file
+        assert os.path.isfile(input_videofilepath), "Invalid param {}".format(input_videofilepath)
+        ", videofilepath must be a valid videofile"
+        cap = cv.VideoCapture(input_videofilepath)
+        # Get video properties
+        fps = cap.get(cv.CAP_PROP_FPS)
+        width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        # Start writing video output
+        if output_videofilepath is not None:
+            fourcc = cv.VideoWriter_fourcc(*'mp4v')  # Codec for the output video
+            output = cv.VideoWriter(output_videofilepath, fourcc, fps, (width, height))
 
-        if videofilepath is not None:
-            assert os.path.isfile(videofilepath), "Invalid param {}".format(videofilepath)
-            ", videofilepath must be a valid videofile"
-            cap = cv.VideoCapture(videofilepath)
-            ret, frame = cap.read()
-            frame_number += 1
-            cv.imshow(display_name, frame)
-        else:
-            cap = cv.VideoCapture(0)
-
-
-        next_object_id = 1
-        sequence_object_ids = []
-        prev_output = OrderedDict()
-        output_boxes = OrderedDict()
+        # Input video stream
+        ret, frame = cap.read()
+        
+        # Initialize input parameters
+        curr_object_id = 1
+        init_bbox = OrderedDict()
+        init_object_ids = []
 
         if optional_box is not None:
-            assert isinstance(optional_box, (list, tuple))
-            assert len(optional_box) == 4, "valid box's format is [x,y,w,h]"
-
-            out = tracker.initialize(frame, {'init_bbox': OrderedDict({next_object_id: optional_box}),
-                                       'init_object_ids': [next_object_id, ],
-                                       'object_ids': [next_object_id, ],
-                                       'sequence_object_ids': [next_object_id, ]})
-
-            prev_output = OrderedDict(out)
-
-            output_boxes[next_object_id] = [optional_box, ]
-            sequence_object_ids.append(next_object_id)
-            next_object_id += 1
-
-        # Wait for initial bounding box if video!
-        paused = videofilepath is not None
-
-        while True:
-
-            if not paused:
-                # Capture frame-by-frame
-                ret, frame = cap.read()
-                frame_number += 1
-                if frame is None:
+            with open(optional_box, "r") as f:
+                for line in f:
+                    x0, y0, width, height = map(int, line.strip().split(","))
+                    init_bbox[curr_object_id] = [x0, y0, width, height]
+                    init_object_ids.append(curr_object_id)
+                    curr_object_id += 1
+        else:
+            frame_copy = frame.copy()
+            cv.imshow(display_name, frame_copy)
+            ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, original_image=frame, current_image=frame_copy)
+            cv.setMouseCallback(display_name, ui_control.mouse_callback)
+            while True:
+                # create bounding boxes until "d" key is pressed when you are done
+                key = cv.waitKey(0) & 0xFF
+                if key == ord("d"):
                     break
+            print(f"{init_object_ids=}, {init_bbox=}")
+
+
+        out = tracker.initialize(frame, {
+            'init_bbox': init_bbox,
+            'init_object_ids': init_object_ids
+        })
+
+        prev_output = OrderedDict(out) 
+        output_boxes = OrderedDict()
+        for obj_id, bb in enumerate(init_bbox, start=1):
+            output_boxes[obj_id] = bb
+
+        # Start tracking loop
+        frame_number = 1
+        while True:
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            frame_number += 1
+            if frame is None:
+                break
 
             frame_disp = frame.copy()
 
             info = OrderedDict()
             info['previous_output'] = prev_output
 
-            if ui_control.new_init:
-                ui_control.new_init = False
-                init_state = ui_control.get_bb()
+            out = tracker.track(frame, info)
+            prev_output = OrderedDict(out)
 
-                info['init_object_ids'] = [next_object_id, ]
-                info['init_bbox'] = OrderedDict({next_object_id: init_state})
-                sequence_object_ids.append(next_object_id)
+
+            if 'segmentation' in out:
+                frame_disp = overlay_mask(frame_disp, out['segmentation'])
+                mask_image = np.zeros(frame_disp.shape, dtype=frame_disp.dtype)
+
                 if save_results:
-                    output_boxes[next_object_id] = [init_state, ]
-                next_object_id += 1
+                    mask_image = overlay_mask(mask_image, out['segmentation'])
+                    if not os.path.exists(self.results_dir):
+                        os.makedirs(self.results_dir)
+                    cv.imwrite(self.results_dir + f"seg_{frame_number}.jpg", mask_image)
 
-            # Draw box
-            if ui_control.mode == 'select':
-                cv.rectangle(frame_disp, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
-
-            if len(sequence_object_ids) > 0:
-                info['sequence_object_ids'] = sequence_object_ids
-                out = tracker.track(frame, info)
-                prev_output = OrderedDict(out)
-
-                if 'segmentation' in out:
-                    frame_disp = overlay_mask(frame_disp, out['segmentation'])
-                    mask_image = np.zeros(frame_disp.shape, dtype=frame_disp.dtype)
-
+            if 'target_bbox' in out:
+                for obj_id, state in out['target_bbox'].items():
+                    state = [int(s) for s in state]
+                    cv.rectangle(frame_disp, (state[0], state[1]), (state[2] + state[0], state[3] + state[1]),
+                                    _tracker_disp_colors[obj_id], 5)
                     if save_results:
-                        mask_image = overlay_mask(mask_image, out['segmentation'])
-                        if not os.path.exists(self.results_dir):
-                            os.makedirs(self.results_dir)
-                        cv.imwrite(self.results_dir + f"seg_{frame_number}.jpg", mask_image)
+                        output_boxes[obj_id].append(state)
 
-                if 'target_bbox' in out:
-                    for obj_id, state in out['target_bbox'].items():
-                        state = [int(s) for s in state]
-                        cv.rectangle(frame_disp, (state[0], state[1]), (state[2] + state[0], state[3] + state[1]),
-                                     _tracker_disp_colors[obj_id], 5)
-                        if save_results:
-                            output_boxes[obj_id].append(state)
-
-            # Put text
-            font_color = (255, 255, 255)
-            msg = "Select target(s). Press 'r' to reset or 'q' to quit."
-            cv.rectangle(frame_disp, (5, 5), (630, 40), (50, 50, 50), -1)
-            cv.putText(frame_disp, msg, (10, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1, font_color, 2)
-
-            if videofilepath is not None:
-                msg = "Press SPACE to pause/resume the video."
-                cv.rectangle(frame_disp, (5, 50), (530, 90), (50, 50, 50), -1)
-                cv.putText(frame_disp, msg, (10, 75), cv.FONT_HERSHEY_COMPLEX_SMALL, 1, font_color, 2)
-
-            # Display the resulting frame
-            cv.imshow(display_name, frame_disp)
-            key = cv.waitKey(1)
-            if key == ord('q'):
-                break
-            elif key == ord('r'):
-                next_object_id = 1
-                sequence_object_ids = []
-                prev_output = OrderedDict()
-
-                info = OrderedDict()
-
-                info['object_ids'] = []
-                info['init_object_ids'] = []
-                info['init_bbox'] = OrderedDict()
-                tracker.initialize(frame, info)
-                ui_control.mode = 'init'
-            # 'Space' to pause video
-            elif key == 32 and videofilepath is not None:
-                paused = not paused
+            if output_videofilepath is not None:
+                output.write(frame_disp)
 
         # When everything done, release the capture
         cap.release()
