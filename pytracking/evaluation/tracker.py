@@ -287,13 +287,14 @@ class Tracker:
             raise ValueError('Unknown multi object mode {}'.format(multiobj_mode))
 
         class UIControl:
-            def __init__(self, curr_object_id, init_bbox, init_object_ids, original_image, current_image):
+            def __init__(self, curr_object_id, init_bbox, init_object_ids, object_ids, original_image, current_image):
                 self.mode = "init" # Two modes: init or select
                 self.target_tl = (-1, -1)
                 self.target_br = (-1, -1)
                 self.curr_object_id = curr_object_id
                 self.init_bbox = init_bbox
                 self.init_object_ids = init_object_ids
+                self.object_ids = object_ids
                 self.original_image = original_image
                 self.current_image = current_image
 
@@ -309,6 +310,7 @@ class Tracker:
                     cv.rectangle(self.current_image, ui_control.get_tl(), ui_control.get_br(), (255, 0, 0), 2)
                     self.mode = 'init'
                     self.init_object_ids.append(curr_object_id)
+                    self.object_ids.append(curr_object_id)
                     self.init_bbox[self.curr_object_id] = self.get_bb()
                     self.curr_object_id+=1
                     self.target_tl = (-1, -1)
@@ -318,6 +320,7 @@ class Tracker:
                     if self.curr_object_id > 0:
                         self.init_bbox.popitem(last=True)
                         self.init_object_ids.pop()
+                        self.object_ids.pop()
                         self.curr_object_id -= 1
                         self.target_tl = (-1, -1)
                         self.target_br = (-1, -1)
@@ -367,23 +370,27 @@ class Tracker:
         curr_object_id = 1
         init_bbox = OrderedDict()
         init_object_ids = []
+        object_ids = []
 
-        if bbox_path is not None:
+        # Initialize bounding boxes
+        if bbox_path is not None: # First method: using a predefined .txt file
             with open(bbox_path, "r") as f:
                 for line in f:
                     x0, y0, width, height = map(int, line.strip().split(","))
                     init_bbox[curr_object_id] = [x0, y0, width, height]
                     init_object_ids.append(curr_object_id)
+                    object_ids.append(curr_object_id)
                     curr_object_id += 1
-        else:
+        else: # Second method: define them using the UI
             frame_copy = frame.copy()
             cv.imshow(display_name, frame_copy)
-            ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, original_image=frame, current_image=frame_copy)
+            ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids, original_image=frame, current_image=frame_copy)
             cv.setMouseCallback(display_name, ui_control.mouse_callback)
             while True:
                 # create bounding boxes until "d" key is pressed when you are done
                 key = cv.waitKey(0) & 0xFF
-                if key == ord("d"):
+                init_object_ids, object_ids, init_bbox = ui_control.init_object_ids, ui_control.init_object_ids, ui_control.init_bbox
+                if key == ord("d") and len(init_object_ids) != 0:
                     break
             print(f"{init_object_ids=}, {init_bbox=}")
 
