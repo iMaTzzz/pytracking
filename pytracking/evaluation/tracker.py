@@ -385,6 +385,11 @@ class Tracker:
         else: # Second method: define them using the UI
             frame_copy = frame.copy()
             cv.imshow(display_name, frame_copy)
+            # Put text
+            font_color = (255, 255, 255)
+            msg = "Select target(s). Press 'd' when you are done."
+            cv.rectangle(frame_disp, (5, 5), (630, 40), (50, 50, 50), -1)
+            cv.putText(frame_disp, msg, (10, 30), cv.FONT_HERSHEY_COMPLEX_SMALL, 1, font_color, 2)
             ui_control = UIControl(curr_object_id=curr_object_id, init_bbox=init_bbox, init_object_ids=init_object_ids, object_ids=object_ids, original_image=frame, current_image=frame_copy)
             cv.setMouseCallback(display_name, ui_control.mouse_callback)
             while True:
