@@ -257,7 +257,7 @@ class Tracker:
 
         return output
 
-    def run_video_generic(self, debug=None, visdom_info=None, input_videofilepath=None, output_videofilepath=None, bbox_path=None, save_results=False):
+    def run_video_generic(self, video_input, debug=None, visdom_info=None, output_video=None, bbox_path=None, save_results=False):
         """Run the tracker with the webcam or a provided video file.
         args:
             debug: Debug level.
@@ -348,17 +348,17 @@ class Tracker:
         cv.resizeWindow(display_name, 960, 720)
 
         # open input video file
-        assert os.path.isfile(input_videofilepath), "Invalid param {}".format(input_videofilepath)
+        assert os.path.isfile(video_input), "Invalid param {}".format(video_input)
         ", videofilepath must be a valid videofile"
-        cap = cv.VideoCapture(input_videofilepath)
+        cap = cv.VideoCapture(video_input)
         # Get video properties
         fps = cap.get(cv.CAP_PROP_FPS)
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         # Start writing video output
-        if output_videofilepath is not None:
+        if output_video is not None:
             fourcc = cv.VideoWriter_fourcc(*'mp4v')  # Codec for the output video
-            output = cv.VideoWriter(output_videofilepath, fourcc, fps, (width, height))
+            output = cv.VideoWriter(output_video, fourcc, fps, (width, height))
 
         # Input video stream
         ret, frame = cap.read()
