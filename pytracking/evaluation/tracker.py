@@ -334,6 +334,9 @@ class Tracker:
                 object_ids.append(index)
                 init_bbox[index] = roi.tolist()
 
+            if output_video is not None:
+                output.write(frame_disp)
+
             print(f"{init_object_ids=}, {object_ids=}, {init_bbox=}")
         # Close all windows
         cv.destroyAllWindows()
